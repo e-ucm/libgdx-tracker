@@ -15,32 +15,62 @@
  */
 package es.eucm.gleaner.tracker.storage;
 
+import com.badlogic.gdx.files.FileHandle;
 import es.eucm.gleaner.tracker.Tracker;
 import es.eucm.gleaner.tracker.Tracker.FlushListener;
 import es.eucm.gleaner.tracker.Tracker.StartListener;
 import es.eucm.gleaner.tracker.http.SimpleHttpResponse;
 
-public class TestStorage implements Storage {
+import java.io.IOException;
+import java.io.Writer;
 
-	public boolean started;
+public class LocalStorage implements Storage {
 
-	public String data = "";
+	private FileHandle tracesFile;
 
+	private Writer writer;
+
+	/**
+	 * @param tracesFile
+	 *            file where to write the traces
+	 */
+	public LocalStorage(FileHandle tracesFile) {
+		this.tracesFile = tracesFile;
+	}
+
+	@Override
 	public void setTracker(Tracker tracker) {
 	}
 
+	@Override
 	public void start(StartListener startListener) {
-		started = true;
-		startListener.handleHttpResponse(new SimpleHttpResponse(
-				"{\"actor\":{\"mbox\":\"user@example.com\"},\"activityId\":\"Test\"}", 200));
+		try {
+			writer = tracesFile.writer(true);
+			startListener.handleHttpResponse(new SimpleHttpResponse("", 200));
+		} catch (Exception e) {
+			startListener.failed(e);
+		}
 	}
 
+	@Override
 	public void send(String data, FlushListener flushListener) {
-		this.data += data;
-		flushListener.handleHttpResponse(new SimpleHttpResponse("", 204));
+		try {
+			writer.append(data);
+            writer.flush();
+			flushListener.handleHttpResponse(new SimpleHttpResponse("", 204));
+		} catch (IOException e) {
+			flushListener.failed(e);
+		}
 	}
 
-    @Override
-    public void close() {
-    }
+	@Override
+	public void close() {
+		if (writer != null) {
+			try {
+				writer.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 }

@@ -76,7 +76,11 @@ public class NetStorage implements Storage {
 				.content(data).build(), flushListener);
 	}
 
-	public class NetStartListener extends StartListener {
+    @Override
+    public void close() {
+    }
+
+    public class NetStartListener extends StartListener {
 
 		private StartListener startListener;
 

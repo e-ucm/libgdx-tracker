@@ -33,4 +33,9 @@ public interface Storage {
 	 */
 	void send(String data, FlushListener flushListener);
 
+    /**
+     * Closes the connection with the storage
+     */
+    void close();
+
 }

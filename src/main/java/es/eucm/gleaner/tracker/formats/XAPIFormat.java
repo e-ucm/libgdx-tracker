@@ -24,7 +24,11 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Pool;
 import es.eucm.gleaner.tracker.C;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.TimeZone;
 
 public class XAPIFormat implements TraceFormat {
 
@@ -44,9 +48,16 @@ public class XAPIFormat implements TraceFormat {
 
 	private PrettyPrintSettings prettyPrintSettings = new PrettyPrintSettings();
 
+	private DateFormat dateFormat;
+
+	private Date date;
+
 	public XAPIFormat() {
 		prettyPrintSettings.outputType = OutputType.json;
 		actor = new JsonValue(ValueType.object);
+		dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+		dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+		date = new Date();
 	}
 
 	public void startData(ObjectMap data) {
@@ -67,7 +78,9 @@ public class XAPIFormat implements TraceFormat {
 			result += s.prettyPrint(prettyPrintSettings) + ",";
 			pool.free(s);
 		}
-		return result.substring(0, result.length() - 1).replaceAll("[\n\t]", "").replace(": ", ":") + "]";
+		return result.substring(0, result.length() - 1)
+				.replaceAll("[\n\t]", "").replace(": ", ":")
+				+ "]";
 	}
 
 	private JsonValue createStatement(String trace) {
@@ -82,19 +95,26 @@ public class XAPIFormat implements TraceFormat {
 		statement.child = actorValue;
 
 		String[] parts = trace.split(",");
+
 		JsonValue verb = pool.obtain();
 		verb.setType(ValueType.object);
 		verb.setName("verb");
-		verb.child = createVerb(parts[0]);
+		verb.child = createVerb(parts[1]);
 		actorValue.next = verb;
 
 		JsonValue activity = pool.obtain();
 		activity.setType(ValueType.object);
-		activity.setName("activity");
+		activity.setName("object");
 		activity.child = createActivity(parts);
 		verb.next = activity;
 
-		if (parts.length > 2) {
+		JsonValue timeStamp = pool.obtain();
+        timeStamp.setName("timestamp");
+		date.setTime(Long.parseLong(parts[0]));
+		timeStamp.set(dateFormat.format(date));
+		activity.next = timeStamp;
+
+		if (parts.length > 3) {
 			JsonValue extensions = pool.obtain();
 			extensions.setType(ValueType.object);
 			extensions.setName("extensions");
@@ -102,14 +122,15 @@ public class XAPIFormat implements TraceFormat {
 			extensions.child = pool.obtain();
 			extensions.child.setType(ValueType.object);
 			extensions.child.setName(EXT_PREFIX + "value");
-			extensions.child.set(parts[2]);
+			extensions.child.set(parts[3]);
 
 			JsonValue result = pool.obtain();
 			result.setType(ValueType.object);
 			result.setName("result");
 			result.child = extensions;
-			activity.next = result;
+			timeStamp.next = result;
 		}
+
 		return statement;
 	}
 
@@ -136,7 +157,7 @@ public class XAPIFormat implements TraceFormat {
 	private JsonValue createActivity(String[] parts) {
 		JsonValue activity = pool.obtain();
 		activity.setType(ValueType.object);
-		String event = parts[0];
+		String event = parts[1];
 		String id;
 		if (C.CHOICE.equals(event)) {
 			id = "choice";
@@ -150,7 +171,7 @@ public class XAPIFormat implements TraceFormat {
 			id = event;
 		}
 		activity.setName("id");
-		activity.set(activityId + id + "/" + parts[1]);
+		activity.set(activityId + id + "/" + parts[2]);
 		return activity;
 	}
 
@@ -163,7 +184,7 @@ public class XAPIFormat implements TraceFormat {
 
 		@Override
 		public void free(JsonValue object) {
-			if ( object == actor ){
+			if (object == actor) {
 				return;
 			}
 

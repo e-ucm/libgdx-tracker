@@ -36,7 +36,7 @@ public class NetStorageTest {
 
 	@Before
 	public void setUp() {
-		tracker = new Tracker(new NetStorage(net = new TestNet(), "", ""), 1);
+		tracker = new Tracker(new NetStorage(net = new TestNet(), "", "", ""), 1);
 	}
 
 	@Test
@@ -47,7 +47,7 @@ public class NetStorageTest {
 		assertTrue(net.started);
 		assertEquals(net.data, "");
 		tracker.update(1.5f);
-		assertEquals(net.data, "trace,test\n");
+		assertTrue(net.data.matches("[0-9]+,trace,test\n"));
 	}
 
 	public static class TestNet implements Net {

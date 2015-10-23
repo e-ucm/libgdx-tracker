@@ -120,6 +120,13 @@ public class Tracker {
 		flushRequested = true;
 	}
 
+    /**
+     * Close the connection with the storage
+     */
+    public void close(){
+        storage.close();
+    }
+
 	private void connect() {
 		if (!connected.get() && !connecting.get()) {
 			connecting.set(true);
@@ -141,6 +148,7 @@ public class Tracker {
 			storage.send(traceFormat.serialize(sent), flushListener);
 		}
 	}
+
 
 	public static class StartListener implements HttpResponseListener {
 
@@ -201,7 +209,7 @@ public class Tracker {
 	 * Adds the given trace to the queue
 	 */
 	public void trace(String trace) {
-		queue.add(trace);
+		queue.add(System.currentTimeMillis() + "," + trace);
 	}
 
 	/**
