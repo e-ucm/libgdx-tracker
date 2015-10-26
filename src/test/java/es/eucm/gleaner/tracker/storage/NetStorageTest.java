@@ -36,7 +36,7 @@ public class NetStorageTest {
 
 	@Before
 	public void setUp() {
-		tracker = new Tracker(new NetStorage(net = new TestNet(), "", "", ""), 1);
+		tracker = new Tracker(new NetStorage(net = new TestNet(), "", ""), 1);
 	}
 
 	@Test

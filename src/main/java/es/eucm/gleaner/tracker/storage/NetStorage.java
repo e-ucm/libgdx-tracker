@@ -34,8 +34,6 @@ public class NetStorage implements Storage {
 
 	private String trackingCode;
 
-	private String authorization;
-
 	private String authToken;
 
 	private HttpRequestBuilder httpBuilder = new HttpRequestBuilder();
@@ -50,12 +48,10 @@ public class NetStorage implements Storage {
 	 * @param trackingCode
 	 *            tracking code for the game
 	 */
-	public NetStorage(Net net, String host, String trackingCode,
-			String authorization) {
+	public NetStorage(Net net, String host, String trackingCode) {
 		this.net = net;
 		this.host = host;
 		this.trackingCode = trackingCode;
-		this.authorization = authorization;
 	}
 
 	@Override
@@ -66,7 +62,7 @@ public class NetStorage implements Storage {
 	@Override
 	public void start(StartListener startListener) {
 		net.sendHttpRequest(
-				httpBuilder.newRequest().header("Authorization", authorization)
+				httpBuilder.newRequest()
 						.url(host + REST_API_START + trackingCode)
 						.method("POST").build(), netStartListener);
 	}
