@@ -46,6 +46,8 @@ public class LocalStorage implements Storage {
 	public void start(StartListener startListener) {
 		try {
 			writer = tracesFile.writer(true);
+			writer.append("--new session\n");
+			writer.flush();
 			startListener.handleHttpResponse(new SimpleHttpResponse("", 200));
 		} catch (Exception e) {
 			startListener.failed(e);

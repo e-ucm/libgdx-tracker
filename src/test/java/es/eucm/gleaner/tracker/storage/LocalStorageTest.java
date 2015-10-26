@@ -58,9 +58,9 @@ public class LocalStorageTest {
 		tracker.zone("zone1");
 		tracker.screen("screen1");
 		tracker.requestFlush();
-        tracker.update(0);
+		tracker.update(0);
 		assertTrue(tempFile.readString().matches(
-				"^[0-9]+,zone,zone1\n[0-9]+,screen,screen1\n$"));
+				"^--new session\n[0-9]+,zone,zone1\n[0-9]+,screen,screen1\n$"));
 		tracker.close();
 	}
 }
