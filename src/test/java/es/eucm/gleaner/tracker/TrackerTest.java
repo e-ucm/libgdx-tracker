@@ -15,8 +15,8 @@
  */
 package es.eucm.gleaner.tracker;
 
-import es.eucm.gleaner.tracker.formats.LinesFormat;
-import es.eucm.gleaner.tracker.formats.XAPIFormat;
+import es.eucm.gleaner.tracker.format.LinesFormat;
+import es.eucm.gleaner.tracker.format.XAPIFormat;
 import es.eucm.gleaner.tracker.storage.TestStorage;
 import org.junit.Before;
 import org.junit.Test;

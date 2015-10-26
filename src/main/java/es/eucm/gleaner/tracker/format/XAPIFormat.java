@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package es.eucm.gleaner.tracker.formats;
+package es.eucm.gleaner.tracker.format;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;

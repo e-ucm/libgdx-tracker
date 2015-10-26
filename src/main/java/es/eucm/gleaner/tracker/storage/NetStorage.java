@@ -57,18 +57,20 @@ public class NetStorage implements Storage {
 		this.trackingCode = trackingCode;
 		this.authorization = authorization;
 	}
+
 	@Override
 	public void setTracker(Tracker tracker) {
 		netStartListener = new NetStartListener(tracker);
 	}
+
 	@Override
 	public void start(StartListener startListener) {
-		netStartListener.setStartListener(startListener);
 		net.sendHttpRequest(
 				httpBuilder.newRequest().header("Authorization", authorization)
 						.url(host + REST_API_START + trackingCode)
 						.method("POST").build(), netStartListener);
 	}
+
 	@Override
 	public void send(String data, FlushListener flushListener) {
 		net.sendHttpRequest(httpBuilder.newRequest().url(host + REST_API_TRACK)
@@ -76,34 +78,20 @@ public class NetStorage implements Storage {
 				.content(data).build(), flushListener);
 	}
 
-    @Override
-    public void close() {
-    }
+	@Override
+	public void close() {
+	}
 
-    public class NetStartListener extends StartListener {
-
-		private StartListener startListener;
+	public class NetStartListener extends StartListener {
 
 		public NetStartListener(Tracker tracker) {
 			super(tracker);
-		}
-
-		public void setStartListener(StartListener startListener) {
-			this.startListener = startListener;
 		}
 
 		@Override
 		protected void processData(ObjectMap data) {
 			authToken = data.get("authToken").toString();
 			super.processData(data);
-		}
-		@Override
-		public void failed(Throwable t) {
-			startListener.failed(t);
-		}
-		@Override
-		public void cancelled() {
-			startListener.cancelled();
 		}
 	}
 }

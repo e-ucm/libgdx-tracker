@@ -13,25 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package es.eucm.gleaner.tracker.formats;
+package es.eucm.gleaner.tracker.format;
 
 import com.badlogic.gdx.utils.ObjectMap;
 
 import java.util.ArrayList;
 
-public class LinesFormat implements TraceFormat {
+public interface TraceFormat {
 
-	@Override
-	public void startData(ObjectMap data) {
+	/**
+	 * Processes the data sent by the server to start the session
+	 */
+	void startData(ObjectMap data);
 
-	}
-
-	@Override
-	public String serialize(ArrayList<String> traces) {
-		String result = "";
-		for (String trace : traces) {
-			result += trace + "\n";
-		}
-		return result;
-	}
+	/**
+	 * Serialize all the traces in an unique string. This will be sent the POST
+	 * body
+	 */
+	String serialize(ArrayList<String> traces);
 }

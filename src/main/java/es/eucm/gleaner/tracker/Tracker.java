@@ -19,8 +19,8 @@ import com.badlogic.gdx.Net.HttpResponse;
 import com.badlogic.gdx.Net.HttpResponseListener;
 import com.badlogic.gdx.net.HttpRequestBuilder;
 import com.badlogic.gdx.utils.ObjectMap;
-import es.eucm.gleaner.tracker.formats.LinesFormat;
-import es.eucm.gleaner.tracker.formats.TraceFormat;
+import es.eucm.gleaner.tracker.format.LinesFormat;
+import es.eucm.gleaner.tracker.format.TraceFormat;
 import es.eucm.gleaner.tracker.storage.Storage;
 
 import java.util.ArrayList;
