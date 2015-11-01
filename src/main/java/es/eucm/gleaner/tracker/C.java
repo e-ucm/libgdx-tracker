@@ -20,4 +20,5 @@ public interface C {
 	String ZONE = "zone";
 	String CHOICE = "choice";
 	String VAR = "var";
+	String CLICK = "click";
 }

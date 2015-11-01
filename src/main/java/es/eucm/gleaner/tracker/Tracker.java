@@ -295,4 +295,44 @@ public class Tracker {
 	public void var(String varName, Object value) {
 		trace(C.VAR, varName, value.toString());
 	}
+
+	/**
+	 * Logs that the user clicked with the mouse a particular target
+	 * (e.g. an enemy, an ally, a button of the HUD, etc.).
+	 *
+	 * This method can also be used for logging touches on tactile screens
+	 * (e.g. smartphones or tablets).
+	 *
+	 * @param x Horizontal coordinate of the mouse or touch event, in the game's
+	 *          coordinate system (please avoid using the window's coordinate system)
+	 * @param y Vertical coordinate of the mouse or touch event,
+	 *          in the game's coordinate system
+	 * @param target Id of the element that was hit by the click
+	 */
+	public void click(float x, float y, String target){
+		trace(C.CLICK, Float.toString(x), Float.toString(y), target);
+	}
+
+	/**
+	 * Logs that the user clicked the mouse on position (x,y).
+	 *
+	 * Unlike {@link #click(float, float, String)}, this method does not log
+	 * the particular target (e.g. an enemy, an ally, a button of the HUD,
+	 * etc.) that was hit.
+	 *
+	 * This method is more convenient when the actual target is not relevant
+	 * (for example, to produce heatmaps) or it can be inferred otherwise
+	 * (for example, using information collected in other traces).
+	 *
+	 * As with {@link #click(float, float, String)}, this method can also
+	 * be used for logging touches on tactile screens (e.g. smartphones or tablets).
+	 *
+	 * @param x Horizontal coordinate of the mouse or touch event, in the game's
+	 *          coordinate system (please avoid using the window's coordinate system)
+	 * @param y Vertical coordinate of the mouse or touch event,
+	 *          in the game's coordinate system
+	 */
+	public void click(float x, float y){
+		trace(C.CLICK, Float.toString(x), Float.toString(y));
+	}
 }
