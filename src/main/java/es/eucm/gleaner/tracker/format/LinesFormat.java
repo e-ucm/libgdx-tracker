@@ -34,4 +34,9 @@ public class LinesFormat implements TraceFormat {
 		}
 		return result;
 	}
+
+	@Override
+	public String contentType() {
+		return "text/plain";
+	}
 }

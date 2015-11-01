@@ -24,7 +24,6 @@ import es.eucm.gleaner.tracker.format.TraceFormat;
 import es.eucm.gleaner.tracker.storage.Storage;
 
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author Ángel Serrano Laguna
@@ -35,11 +34,11 @@ public class Tracker {
 
 	private TraceFormat traceFormat = new LinesFormat();
 
-	private AtomicBoolean sending;
+	private boolean sending;
 
-	private AtomicBoolean connected;
+	private boolean connected;
 
-	private AtomicBoolean connecting;
+	private boolean connecting;
 
 	private boolean flushRequested;
 
@@ -75,15 +74,43 @@ public class Tracker {
 		this.flushInterval = flushInterval;
 		this.nextFlush = flushInterval;
 		startListener = new StartListener(this);
-		sending = new AtomicBoolean();
-		connected = new AtomicBoolean();
-		connecting = new AtomicBoolean();
+		sending = false;
+		connected = false;
+		connecting = false;
 		queue = new ArrayList<String>();
 		sent = new ArrayList<String>();
 	}
 
+	public synchronized boolean isSending() {
+		return sending;
+	}
+
+	public synchronized void setSending(boolean sending) {
+		this.sending = sending;
+	}
+
+	public synchronized boolean isConnected() {
+		return connected;
+	}
+
+	public synchronized void setConnected(boolean connected) {
+		this.connected = connected;
+	}
+
+	public synchronized boolean isConnecting() {
+		return connecting;
+	}
+
+	public synchronized void setConnecting(boolean connecting) {
+		this.connecting = connecting;
+	}
+
 	public void setTraceFormat(TraceFormat traceFormat) {
 		this.traceFormat = traceFormat;
+	}
+
+	public TraceFormat getTraceFormat() {
+		return traceFormat;
 	}
 
 	public void start() {
@@ -120,16 +147,18 @@ public class Tracker {
 		flushRequested = true;
 	}
 
-    /**
-     * Close the connection with the storage
-     */
-    public void close(){
-        storage.close();
-    }
+	/**
+	 * Close the connection with the storage
+	 */
+	public void close() {
+		requestFlush();
+		update(0);
+		storage.close();
+	}
 
 	private void connect() {
-		if (!connected.get() && !connecting.get()) {
-			connecting.set(true);
+		if (!isConnected() && !isConnecting()) {
+			setConnecting(true);
 			storage.start(startListener);
 		}
 	}
@@ -138,17 +167,16 @@ public class Tracker {
 	 * Sends all traces to the server and empties the current queue of traces
 	 */
 	private void flush() {
-		if (!connected.get()) {
+		if (!isConnected()) {
 			connect();
-		} else if (!queue.isEmpty() && !sending.get()) {
-			sending.set(true);
+		} else if (!queue.isEmpty() && !isSending()) {
+			setSending(true);
 			sent.addAll(queue);
 			queue.clear();
 			flushRequested = false;
 			storage.send(traceFormat.serialize(sent), flushListener);
 		}
 	}
-
 
 	public static class StartListener implements HttpResponseListener {
 
@@ -168,9 +196,9 @@ public class Tracker {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				tracker.connected.set(true);
+				tracker.setConnected(true);
 			}
-			tracker.connecting.set(false);
+			tracker.setConnecting(false);
 		}
 
 		protected void processData(ObjectMap data) {
@@ -178,29 +206,29 @@ public class Tracker {
 		}
 
 		public void failed(Throwable t) {
-			tracker.connecting.set(false);
+			tracker.setConnecting(false);
 		}
 
 		public void cancelled() {
-			tracker.connecting.set(false);
+			tracker.setConnecting(false);
 		}
 	}
 
 	public class FlushListener implements HttpResponseListener {
 
 		public void handleHttpResponse(HttpResponse httpResponse) {
-			if (httpResponse.getStatus().getStatusCode() == 204) {
+			if (httpResponse.getStatus().getStatusCode() == 200) {
 				sent.clear();
-				sending.set(false);
 			}
+			setSending(false);
 		}
 
 		public void failed(Throwable t) {
-			sending.set(false);
+			setSending(false);
 		}
 
 		public void cancelled() {
-			sending.set(false);
+			setSending(false);
 		}
 	}
 

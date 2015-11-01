@@ -30,6 +30,8 @@ public class NetStorage implements Storage {
 
 	private Net net;
 
+	private Tracker tracker;
+
 	private String host;
 
 	private String trackingCode;
@@ -56,13 +58,15 @@ public class NetStorage implements Storage {
 
 	@Override
 	public void setTracker(Tracker tracker) {
+		this.tracker = tracker;
 		netStartListener = new NetStartListener(tracker);
 	}
 
 	@Override
 	public void start(StartListener startListener) {
 		net.sendHttpRequest(
-				httpBuilder.newRequest()
+				httpBuilder
+						.newRequest()
 						.url(host + REST_API_START + trackingCode)
 						.method("POST").build(), netStartListener);
 	}
@@ -70,6 +74,8 @@ public class NetStorage implements Storage {
 	@Override
 	public void send(String data, FlushListener flushListener) {
 		net.sendHttpRequest(httpBuilder.newRequest().url(host + REST_API_TRACK)
+				.header("Content-Type",
+						tracker.getTraceFormat().contentType())
 				.method("POST").header("Authorization", authToken)
 				.content(data).build(), flushListener);
 	}

@@ -31,4 +31,9 @@ public interface TraceFormat {
 	 * body
 	 */
 	String serialize(ArrayList<String> traces);
+
+	/**
+	 * @return the mime type of the content produced by this format
+	 */
+	String contentType();
 }

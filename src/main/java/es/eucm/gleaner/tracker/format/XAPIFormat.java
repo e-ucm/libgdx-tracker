@@ -83,6 +83,11 @@ public class XAPIFormat implements TraceFormat {
 				+ "]";
 	}
 
+	@Override
+	public String contentType() {
+		return "application/json; charset=utf-8";
+	}
+
 	private JsonValue createStatement(String trace) {
 		JsonValue statement = pool.obtain();
 		statement.setType(ValueType.object);
@@ -109,7 +114,7 @@ public class XAPIFormat implements TraceFormat {
 		verb.next = activity;
 
 		JsonValue timeStamp = pool.obtain();
-        timeStamp.setName("timestamp");
+		timeStamp.setName("timestamp");
 		date.setTime(Long.parseLong(parts[0]));
 		timeStamp.set(dateFormat.format(date));
 		activity.next = timeStamp;
