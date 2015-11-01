@@ -113,6 +113,11 @@ public class Tracker {
 		return traceFormat;
 	}
 
+	/**
+	 * Invoke this method to start the data collection. {@link #start()} must be invoked
+	 * before any traces are logged
+	 * A game initialization method is a good place to call {@link #start()}
+	 */
 	public void start() {
 		connect();
 	}
@@ -147,14 +152,16 @@ public class Tracker {
 		flushRequested = true;
 	}
 
-	/**
-	 * Close the connection with the storage
-	 */
-	public void close() {
+    /**
+     * Closes the connection and finalizes the tracking session. No further
+	 * traces can be logged after {@link #close()} is invoked.
+	 * Make sure to invoke this method before your game exits.
+     */
+    public void close(){
 		requestFlush();
 		update(0);
 		storage.close();
-	}
+    }
 
 	private void connect() {
 		if (!isConnected() && !isConnecting()) {
@@ -273,7 +280,10 @@ public class Tracker {
 	}
 
 	/**
-	 * Player choose an option in a given choice
+	 * An option from a set of choices was made. This can be used both
+	 * to log "internal decisions" of the game (e.g. random selection of
+	 * a type of enemy from a list), or users' selections over a group
+	 * of options (e.g. avatar picked from a list)
 	 * 
 	 * @param choiceId
 	 *            the choice identifier
@@ -290,7 +300,7 @@ public class Tracker {
 	 * @param varName
 	 *            variable's name
 	 * @param value
-	 *            variable's value
+	 *            variable's value. Note: The class of the value should be serializable
 	 */
 	public void var(String varName, Object value) {
 		trace(C.VAR, varName, value.toString());
