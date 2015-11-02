@@ -239,6 +239,25 @@ public class Tracker {
 		}
 	}
 
+	/**
+	 * Escapes a piece of input in case it has commas by adding quotes at beginning and end.
+	 * If there are any quotes in the piece of input provided, these are escaped by adding a back slash
+	 * Examples:
+	 * 		input with a, comma     =>   "input with a, comma"
+	 * 	    input "with \"quotes    =>   "input \"with \\"quotes"
+	 * 	    "input with, quotes, and commas"   =>   "\"input with, quotes, and commas\""
+	 * @param input	The input to be escaped
+	 * @return	The escaped version of the input
+	 */
+	private String escapeInput(String input){
+		if (!input.contains(",") && !input.contains("\"")){
+			return input;
+		}
+		input = input.replaceAll("\"", "\\\\\"");
+		input="\""+input+"\"";
+		return input;
+	}
+
 	// Trace methods
 	/**
 	 * Adds the given trace to the queue
@@ -254,7 +273,7 @@ public class Tracker {
 		String result = "";
 		int i = 0;
 		for (String value : values) {
-			result += value + (i++ == values.length - 1 ? "" : ",");
+			result += escapeInput(value) + (i++ == values.length - 1 ? "" : ",");
 		}
 		trace(result);
 	}
