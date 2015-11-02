@@ -41,6 +41,8 @@ public class TrackerTest {
 		tracker.zone("zone1");
 		tracker.var("score", 1000);
 		tracker.trace("random", "random", "random");
+		tracker.click(100, 200F,"object1");
+		tracker.click(50, 70F);
 		tracker.requestFlush();
 		tracker.update(0);
 	}
@@ -51,10 +53,14 @@ public class TrackerTest {
 		generateAllTraces();
 		assertTrue(storage.started);
 		String timeStamp = "[0-9]+,";
+		System.out.println(storage.data);
 		assertTrue(storage.data.matches(timeStamp + C.SCREEN + ",menu\n"
 				+ timeStamp + C.CHOICE + ",options,start\n" + timeStamp
 				+ C.ZONE + ",zone1\n" + timeStamp + C.VAR + ",score,1000\n"
-				+ timeStamp + "random,random,random\n"));
+				+ timeStamp + "random,random,random\n"
+				+ timeStamp + C.CLICK+",100.0,200.0,object1\n"
+				+ timeStamp + C.CLICK+",50.0,70.0\n"
+		));
 	}
 
 	@Test

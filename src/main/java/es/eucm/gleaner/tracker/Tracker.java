@@ -113,6 +113,11 @@ public class Tracker {
 		return traceFormat;
 	}
 
+	/**
+	 * Invoke this method to start the data collection. {@link #start()} must be invoked
+	 * before any traces are logged
+	 * A game initialization method is a good place to call {@link #start()}
+	 */
 	public void start() {
 		connect();
 	}
@@ -147,14 +152,16 @@ public class Tracker {
 		flushRequested = true;
 	}
 
-	/**
-	 * Close the connection with the storage
-	 */
-	public void close() {
+    /**
+     * Closes the connection and finalizes the tracking session. No further
+	 * traces can be logged after {@link #close()} is invoked.
+	 * Make sure to invoke this method before your game exits.
+     */
+    public void close(){
 		requestFlush();
 		update(0);
 		storage.close();
-	}
+    }
 
 	private void connect() {
 		if (!isConnected() && !isConnecting()) {
@@ -273,7 +280,10 @@ public class Tracker {
 	}
 
 	/**
-	 * Player choose an option in a given choice
+	 * An option from a set of choices was made. This can be used both
+	 * to log "internal decisions" of the game (e.g. random selection of
+	 * a type of enemy from a list), or users' selections over a group
+	 * of options (e.g. avatar picked from a list)
 	 * 
 	 * @param choiceId
 	 *            the choice identifier
@@ -290,9 +300,49 @@ public class Tracker {
 	 * @param varName
 	 *            variable's name
 	 * @param value
-	 *            variable's value
+	 *            variable's value. Note: The class of the value should be serializable
 	 */
 	public void var(String varName, Object value) {
 		trace(C.VAR, varName, value.toString());
+	}
+
+	/**
+	 * Logs that the user clicked with the mouse a particular target
+	 * (e.g. an enemy, an ally, a button of the HUD, etc.).
+	 *
+	 * This method can also be used for logging touches on tactile screens
+	 * (e.g. smartphones or tablets).
+	 *
+	 * @param x Horizontal coordinate of the mouse or touch event, in the game's
+	 *          coordinate system (please avoid using the window's coordinate system)
+	 * @param y Vertical coordinate of the mouse or touch event,
+	 *          in the game's coordinate system
+	 * @param target Id of the element that was hit by the click
+	 */
+	public void click(float x, float y, String target){
+		trace(C.CLICK, Float.toString(x), Float.toString(y), target);
+	}
+
+	/**
+	 * Logs that the user clicked the mouse on position (x,y).
+	 *
+	 * Unlike {@link #click(float, float, String)}, this method does not log
+	 * the particular target (e.g. an enemy, an ally, a button of the HUD,
+	 * etc.) that was hit.
+	 *
+	 * This method is more convenient when the actual target is not relevant
+	 * (for example, to produce heatmaps) or it can be inferred otherwise
+	 * (for example, using information collected in other traces).
+	 *
+	 * As with {@link #click(float, float, String)}, this method can also
+	 * be used for logging touches on tactile screens (e.g. smartphones or tablets).
+	 *
+	 * @param x Horizontal coordinate of the mouse or touch event, in the game's
+	 *          coordinate system (please avoid using the window's coordinate system)
+	 * @param y Vertical coordinate of the mouse or touch event,
+	 *          in the game's coordinate system
+	 */
+	public void click(float x, float y){
+		trace(C.CLICK, Float.toString(x), Float.toString(y));
 	}
 }

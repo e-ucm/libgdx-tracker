@@ -48,7 +48,9 @@ public class NetStorage implements Storage {
 	 * @param host
 	 *            host of the collector server
 	 * @param trackingCode
-	 *            tracking code for the game
+	 *            tracking code for the game. Used by the gleaner backend to associate traces with a particular game and/or experiment
+	 * @param authorization
+	 * 			  a special code that is given by the administrators of the gleaner system, and which is used to verify that requests produced are authorized.
 	 */
 	public NetStorage(Net net, String host, String trackingCode) {
 		this.net = net;
