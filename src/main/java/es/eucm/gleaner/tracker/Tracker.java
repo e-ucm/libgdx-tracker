@@ -193,6 +193,7 @@ public class Tracker {
 			this.tracker = tracker;
 		}
 
+		@Override
 		public void handleHttpResponse(HttpResponse httpResponse) {
 			if (httpResponse.getStatus().getStatusCode() == 200) {
 				String data = httpResponse.getResultAsString();
@@ -212,10 +213,12 @@ public class Tracker {
 			tracker.traceFormat.startData(data);
 		}
 
+		@Override
 		public void failed(Throwable t) {
 			tracker.setConnecting(false);
 		}
 
+		@Override
 		public void cancelled() {
 			tracker.setConnecting(false);
 		}
@@ -223,17 +226,20 @@ public class Tracker {
 
 	public class FlushListener implements HttpResponseListener {
 
+		@Override
 		public void handleHttpResponse(HttpResponse httpResponse) {
-			if (httpResponse.getStatus().getStatusCode() == 200) {
+			if (httpResponse.getStatus().getStatusCode()/100 == 2) {
 				sent.clear();
 			}
 			setSending(false);
 		}
 
+		@Override
 		public void failed(Throwable t) {
 			setSending(false);
 		}
 
+		@Override
 		public void cancelled() {
 			setSending(false);
 		}

@@ -56,6 +56,8 @@ public class LocalStorageTest {
 	public void testTraces() {
 		tracker.start();
 		tracker.zone("zone1");
+		tracker.requestFlush();
+		tracker.update(0);
 		tracker.screen("screen1");
 		tracker.requestFlush();
 		tracker.update(0);
