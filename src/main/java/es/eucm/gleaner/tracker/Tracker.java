@@ -114,9 +114,9 @@ public class Tracker {
 	}
 
 	/**
-	 * Invoke this method to start the data collection. {@link #start()} must be invoked
-	 * before any traces are logged
-	 * A game initialization method is a good place to call {@link #start()}
+	 * Invoke this method to start the data collection. {@link #start()} must be
+	 * invoked before any traces are logged A game initialization method is a
+	 * good place to call {@link #start()}
 	 */
 	public void start() {
 		connect();
@@ -152,16 +152,26 @@ public class Tracker {
 		flushRequested = true;
 	}
 
-    /**
-     * Closes the connection and finalizes the tracking session. No further
-	 * traces can be logged after {@link #close()} is invoked.
-	 * Make sure to invoke this method before your game exits.
-     */
-    public void close(){
-		requestFlush();
-		update(0);
+	/**
+	 * Closes the connection and finalizes the tracking session. No further
+	 * traces can be logged after {@link #close()} is invoked. Make sure to
+	 * invoke this method before your game exits.
+	 */
+	public void close() {
+		int retries = 10;
+		while ((!queue.isEmpty() || isSending()) && retries > 0) {
+			if (isSending() || isConnecting()) {
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+				}
+				retries--;
+			} else {
+				flush();
+			}
+		}
 		storage.close();
-    }
+	}
 
 	private void connect() {
 		if (!isConnected() && !isConnecting()) {
@@ -195,7 +205,7 @@ public class Tracker {
 
 		@Override
 		public void handleHttpResponse(HttpResponse httpResponse) {
-			if (httpResponse.getStatus().getStatusCode() == 200) {
+			if (httpResponse.getStatus().getStatusCode() / 100 == 2) {
 				String data = httpResponse.getResultAsString();
 				try {
 					ObjectMap result = HttpRequestBuilder.json.fromJson(
@@ -228,7 +238,7 @@ public class Tracker {
 
 		@Override
 		public void handleHttpResponse(HttpResponse httpResponse) {
-			if (httpResponse.getStatus().getStatusCode()/100 == 2) {
+			if (httpResponse.getStatus().getStatusCode() / 100 == 2) {
 				sent.clear();
 			}
 			setSending(false);
@@ -246,21 +256,23 @@ public class Tracker {
 	}
 
 	/**
-	 * Escapes a piece of input in case it has commas by adding quotes at beginning and end.
-	 * If there are any quotes in the piece of input provided, these are escaped by adding a back slash
-	 * Examples:
-	 * 		input with a, comma     =>   "input with a, comma"
-	 * 	    input "with \"quotes    =>   "input \"with \\"quotes"
-	 * 	    "input with, quotes, and commas"   =>   "\"input with, quotes, and commas\""
-	 * @param input	The input to be escaped
-	 * @return	The escaped version of the input
+	 * Escapes a piece of input in case it has commas by adding quotes at
+	 * beginning and end. If there are any quotes in the piece of input
+	 * provided, these are escaped by adding a back slash Examples: input with
+	 * a, comma => "input with a, comma" input "with \"quotes    =>   "input
+	 * \"with \\"quotes" "input with, quotes, and commas" =>
+	 * "\"input with, quotes, and commas\""
+	 * 
+	 * @param input
+	 *            The input to be escaped
+	 * @return The escaped version of the input
 	 */
-	private String escapeInput(String input){
-		if (!input.contains(",") && !input.contains("\"")){
+	private String escapeInput(String input) {
+		if (!input.contains(",") && !input.contains("\"")) {
 			return input;
 		}
 		input = input.replaceAll("\"", "\\\\\"");
-		input="\""+input+"\"";
+		input = "\"" + input + "\"";
 		return input;
 	}
 
@@ -279,7 +291,8 @@ public class Tracker {
 		String result = "";
 		int i = 0;
 		for (String value : values) {
-			result += escapeInput(value) + (i++ == values.length - 1 ? "" : ",");
+			result += escapeInput(value)
+					+ (i++ == values.length - 1 ? "" : ",");
 		}
 		trace(result);
 	}
@@ -305,10 +318,10 @@ public class Tracker {
 	}
 
 	/**
-	 * An option from a set of choices was made. This can be used both
-	 * to log "internal decisions" of the game (e.g. random selection of
-	 * a type of enemy from a list), or users' selections over a group
-	 * of options (e.g. avatar picked from a list)
+	 * An option from a set of choices was made. This can be used both to log
+	 * "internal decisions" of the game (e.g. random selection of a type of
+	 * enemy from a list), or users' selections over a group of options (e.g.
+	 * avatar picked from a list)
 	 * 
 	 * @param choiceId
 	 *            the choice identifier
@@ -325,49 +338,58 @@ public class Tracker {
 	 * @param varName
 	 *            variable's name
 	 * @param value
-	 *            variable's value. Note: The class of the value should be serializable
+	 *            variable's value. Note: The class of the value should be
+	 *            serializable
 	 */
 	public void var(String varName, Object value) {
 		trace(C.VAR, varName, value.toString());
 	}
 
 	/**
-	 * Logs that the user clicked with the mouse a particular target
-	 * (e.g. an enemy, an ally, a button of the HUD, etc.).
+	 * Logs that the user clicked with the mouse a particular target (e.g. an
+	 * enemy, an ally, a button of the HUD, etc.).
 	 *
-	 * This method can also be used for logging touches on tactile screens
-	 * (e.g. smartphones or tablets).
+	 * This method can also be used for logging touches on tactile screens (e.g.
+	 * smartphones or tablets).
 	 *
-	 * @param x Horizontal coordinate of the mouse or touch event, in the game's
-	 *          coordinate system (please avoid using the window's coordinate system)
-	 * @param y Vertical coordinate of the mouse or touch event,
-	 *          in the game's coordinate system
-	 * @param target Id of the element that was hit by the click
+	 * @param x
+	 *            Horizontal coordinate of the mouse or touch event, in the
+	 *            game's coordinate system (please avoid using the window's
+	 *            coordinate system)
+	 * @param y
+	 *            Vertical coordinate of the mouse or touch event, in the game's
+	 *            coordinate system
+	 * @param target
+	 *            Id of the element that was hit by the click
 	 */
-	public void click(float x, float y, String target){
+	public void click(float x, float y, String target) {
 		trace(C.CLICK, Float.toString(x), Float.toString(y), target);
 	}
 
 	/**
 	 * Logs that the user clicked the mouse on position (x,y).
 	 *
-	 * Unlike {@link #click(float, float, String)}, this method does not log
-	 * the particular target (e.g. an enemy, an ally, a button of the HUD,
-	 * etc.) that was hit.
+	 * Unlike {@link #click(float, float, String)}, this method does not log the
+	 * particular target (e.g. an enemy, an ally, a button of the HUD, etc.)
+	 * that was hit.
 	 *
 	 * This method is more convenient when the actual target is not relevant
-	 * (for example, to produce heatmaps) or it can be inferred otherwise
-	 * (for example, using information collected in other traces).
+	 * (for example, to produce heatmaps) or it can be inferred otherwise (for
+	 * example, using information collected in other traces).
 	 *
-	 * As with {@link #click(float, float, String)}, this method can also
-	 * be used for logging touches on tactile screens (e.g. smartphones or tablets).
+	 * As with {@link #click(float, float, String)}, this method can also be
+	 * used for logging touches on tactile screens (e.g. smartphones or
+	 * tablets).
 	 *
-	 * @param x Horizontal coordinate of the mouse or touch event, in the game's
-	 *          coordinate system (please avoid using the window's coordinate system)
-	 * @param y Vertical coordinate of the mouse or touch event,
-	 *          in the game's coordinate system
+	 * @param x
+	 *            Horizontal coordinate of the mouse or touch event, in the
+	 *            game's coordinate system (please avoid using the window's
+	 *            coordinate system)
+	 * @param y
+	 *            Vertical coordinate of the mouse or touch event, in the game's
+	 *            coordinate system
 	 */
-	public void click(float x, float y){
+	public void click(float x, float y) {
 		trace(C.CLICK, Float.toString(x), Float.toString(y));
 	}
 }

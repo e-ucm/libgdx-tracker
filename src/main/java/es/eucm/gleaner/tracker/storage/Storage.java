@@ -15,9 +15,8 @@
  */
 package es.eucm.gleaner.tracker.storage;
 
+import com.badlogic.gdx.Net.HttpResponseListener;
 import es.eucm.gleaner.tracker.Tracker;
-import es.eucm.gleaner.tracker.Tracker.FlushListener;
-import es.eucm.gleaner.tracker.Tracker.StartListener;
 
 public interface Storage {
 
@@ -26,16 +25,16 @@ public interface Storage {
 	/**
 	 * The tracker wants to start sending traces
 	 */
-	void start(StartListener startListener);
+	void start(HttpResponseListener startListener);
 
 	/**
 	 * The tracker wants to send the given data
 	 */
-	void send(String data, FlushListener flushListener);
+	void send(String data, HttpResponseListener flushListener);
 
-    /**
-     * Closes the connection with the storage
-     */
-    void close();
+	/**
+	 * Closes the connection with the storage
+	 */
+	void close();
 
 }

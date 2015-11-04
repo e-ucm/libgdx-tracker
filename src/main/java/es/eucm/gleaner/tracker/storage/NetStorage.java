@@ -16,10 +16,10 @@
 package es.eucm.gleaner.tracker.storage;
 
 import com.badlogic.gdx.Net;
+import com.badlogic.gdx.Net.HttpResponseListener;
 import com.badlogic.gdx.net.HttpRequestBuilder;
 import com.badlogic.gdx.utils.ObjectMap;
 import es.eucm.gleaner.tracker.Tracker;
-import es.eucm.gleaner.tracker.Tracker.FlushListener;
 import es.eucm.gleaner.tracker.Tracker.StartListener;
 
 public class NetStorage implements Storage {
@@ -49,8 +49,6 @@ public class NetStorage implements Storage {
 	 *            host of the collector server
 	 * @param trackingCode
 	 *            tracking code for the game. Used by the gleaner backend to associate traces with a particular game and/or experiment
-	 * @param authorization
-	 * 			  a special code that is given by the administrators of the gleaner system, and which is used to verify that requests produced are authorized.
 	 */
 	public NetStorage(Net net, String host, String trackingCode) {
 		this.net = net;
@@ -65,7 +63,7 @@ public class NetStorage implements Storage {
 	}
 
 	@Override
-	public void start(StartListener startListener) {
+	public void start(HttpResponseListener startListener) {
 		net.sendHttpRequest(
 				httpBuilder
 						.newRequest()
@@ -74,10 +72,10 @@ public class NetStorage implements Storage {
 	}
 
 	@Override
-	public void send(String data, FlushListener flushListener) {
+	public void send(String data, HttpResponseListener flushListener) {
 		net.sendHttpRequest(httpBuilder.newRequest().url(host + REST_API_TRACK)
 				.header("Content-Type",
-						tracker.getTraceFormat().contentType())
+                        tracker.getTraceFormat().contentType())
 				.method("POST").header("Authorization", authToken)
 				.content(data).build(), flushListener);
 	}

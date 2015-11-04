@@ -15,10 +15,11 @@
  */
 package es.eucm.gleaner.tracker.storage;
 
+import com.badlogic.gdx.Net.HttpResponseListener;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.utils.async.AsyncExecutor;
+import com.badlogic.gdx.utils.async.AsyncTask;
 import es.eucm.gleaner.tracker.Tracker;
-import es.eucm.gleaner.tracker.Tracker.FlushListener;
-import es.eucm.gleaner.tracker.Tracker.StartListener;
 import es.eucm.gleaner.tracker.http.SimpleHttpResponse;
 
 import java.io.IOException;
@@ -26,9 +27,11 @@ import java.io.Writer;
 
 public class LocalStorage implements Storage {
 
-	private FileHandle tracesFile;
+	private AsyncExecutor asyncExecutor;
 
-	private Writer writer;
+	private WriteTask writeTask;
+
+	private FileHandle tracesFile;
 
 	/**
 	 * @param tracesFile
@@ -36,6 +39,8 @@ public class LocalStorage implements Storage {
 	 */
 	public LocalStorage(FileHandle tracesFile) {
 		this.tracesFile = tracesFile;
+		asyncExecutor = new AsyncExecutor(1);
+		writeTask = new WriteTask(tracesFile);
 	}
 
 	@Override
@@ -43,35 +48,67 @@ public class LocalStorage implements Storage {
 	}
 
 	@Override
-	public void start(StartListener startListener) {
-		try {
-			writer = tracesFile.writer(true);
-			writer.append("--new session\n");
-			writer.flush();
-			startListener.handleHttpResponse(new SimpleHttpResponse("", 200));
-		} catch (Exception e) {
-			startListener.failed(e);
-		}
+	public void start(HttpResponseListener startListener) {
+		writeTask = new WriteTask(tracesFile);
+		write("session," + System.currentTimeMillis() + "\n", startListener);
 	}
 
 	@Override
-	public void send(String data, FlushListener flushListener) {
-		try {
-			writer.append(data);
-            writer.flush();
-			flushListener.handleHttpResponse(new SimpleHttpResponse("", 204));
-		} catch (IOException e) {
-			flushListener.failed(e);
-		}
+	public void send(String data, HttpResponseListener flushListener) {
+		write(data, flushListener);
+	}
+
+	private void write(String data, HttpResponseListener listener) {
+		writeTask.setData(data, listener);
+		asyncExecutor.submit(writeTask);
 	}
 
 	@Override
 	public void close() {
-		if (writer != null) {
+		asyncExecutor.dispose();
+		writeTask.close();
+	}
+
+	private static class WriteTask implements AsyncTask<Void> {
+
+		private Writer writer;
+
+		private String data;
+
+		private HttpResponseListener responseListener;
+
+		public WriteTask(FileHandle fileHandle) {
+			writer = fileHandle.writer(true);
+		}
+
+		public void setData(String data, HttpResponseListener responseListener) {
+			this.data = data;
+			this.responseListener = responseListener;
+		}
+
+		@Override
+		public Void call() throws Exception {
 			try {
-				writer.close();
-			} catch (IOException e) {
-				e.printStackTrace();
+				synchronized (this) {
+					writer.append(data);
+					data = null;
+					writer.flush();
+				}
+				responseListener.handleHttpResponse(new SimpleHttpResponse("",
+						204));
+			} catch (Exception e) {
+				responseListener.failed(e);
+			}
+			return null;
+		}
+
+		public void close() {
+			if (writer != null) {
+				try {
+					writer.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
