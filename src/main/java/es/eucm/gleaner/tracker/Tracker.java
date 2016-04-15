@@ -18,6 +18,7 @@ package es.eucm.gleaner.tracker;
 import com.badlogic.gdx.Net.HttpResponse;
 import com.badlogic.gdx.Net.HttpResponseListener;
 import com.badlogic.gdx.net.HttpRequestBuilder;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import es.eucm.gleaner.tracker.format.LinesFormat;
 import es.eucm.gleaner.tracker.format.TraceFormat;
@@ -60,6 +61,8 @@ public class Tracker {
 
 	private float flushInterval = -1;
 
+	private Array<TraceListener> listeners = new Array<TraceListener>(3);
+
 	public Tracker(Storage storage) {
 		this(storage, -1);
 	}
@@ -79,6 +82,10 @@ public class Tracker {
 		connecting = false;
 		queue = new ArrayList<String>();
 		sent = new ArrayList<String>();
+	}
+
+	public void addTraceListener(TraceListener traceListener) {
+		listeners.add(traceListener);
 	}
 
 	public synchronized boolean isSending() {
@@ -282,6 +289,9 @@ public class Tracker {
 	 */
 	public void trace(String trace) {
 		queue.add(System.currentTimeMillis() + "," + trace);
+		for (TraceListener listener : listeners) {
+			listener.trace(trace);
+		}
 	}
 
 	/**
@@ -391,5 +401,12 @@ public class Tracker {
 	 */
 	public void click(float x, float y) {
 		trace(C.CLICK, Float.toString(x), Float.toString(y));
+	}
+
+	public interface TraceListener {
+		/**
+		 * A trace was added to the queue
+		 */
+		void trace(String trace);
 	}
 }
