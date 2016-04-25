@@ -12,4 +12,12 @@
 
     <artifactId>viewer</artifactId>
     <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>es.e-ucm.gleaner</groupId>
+            <artifactId>tracker</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 </project>

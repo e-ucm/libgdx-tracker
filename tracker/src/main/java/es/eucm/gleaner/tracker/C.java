@@ -16,9 +16,15 @@
 package es.eucm.gleaner.tracker;
 
 public interface C {
+	String STARTED = "started";
+	String COMPLETED = "completed";
+
+	String SELECTED = "selected";
+	String SET = "set";
+	String INCREASED = "increased";
+	String DECREASED = "decreased";
+
 	String SCREEN = "screen";
 	String ZONE = "zone";
-	String CHOICE = "choice";
-	String VAR = "var";
 	String CLICK = "click";
 }

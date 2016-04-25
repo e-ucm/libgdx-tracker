@@ -29,7 +29,7 @@ import java.util.ArrayList;
 /**
  * @author Ángel Serrano Laguna
  */
-public class Tracker {
+public class Tracker implements C {
 
 	private Storage storage;
 
@@ -288,9 +288,10 @@ public class Tracker {
 	 * Adds the given trace to the queue
 	 */
 	public void trace(String trace) {
-		queue.add(System.currentTimeMillis() + "," + trace);
+		String t = System.currentTimeMillis() + "," + trace;
+		queue.add(t);
 		for (TraceListener listener : listeners) {
-			listener.trace(trace);
+			listener.trace(t);
 		}
 	}
 
@@ -305,6 +306,20 @@ public class Tracker {
 					+ (i++ == values.length - 1 ? "" : ",");
 		}
 		trace(result);
+	}
+
+	/**
+	 * Starts a completable
+	 */
+	public void started(String completableId){
+		trace(STARTED, completableId);
+	}
+
+	/**
+	 * Fulfills a completable
+	 */
+	public void completed(String completableId){
+		trace(COMPLETED, completableId);
 	}
 
 	/**
@@ -333,13 +348,13 @@ public class Tracker {
 	 * enemy from a list), or users' selections over a group of options (e.g.
 	 * avatar picked from a list)
 	 * 
-	 * @param choiceId
+	 * @param alternativeId
 	 *            the choice identifier
 	 * @param optionId
 	 *            the option identifier
 	 */
-	public void choice(String choiceId, String optionId) {
-		trace(C.CHOICE, choiceId, optionId);
+	public void selected(String alternativeId, String optionId) {
+		trace(SELECTED, alternativeId, optionId);
 	}
 
 	/**
@@ -351,8 +366,8 @@ public class Tracker {
 	 *            variable's value. Note: The class of the value should be
 	 *            serializable
 	 */
-	public void var(String varName, Object value) {
-		trace(C.VAR, varName, value.toString());
+	public void set(String varName, Object value) {
+		trace(SET, varName, value.toString());
 	}
 
 	/**

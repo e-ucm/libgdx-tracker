@@ -24,19 +24,16 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Pool;
 import es.eucm.gleaner.tracker.C;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.TimeZone;
 
-public class XAPIFormat implements TraceFormat {
+public class XAPIFormat implements TraceFormat, C {
 
-	public static final String VOCAB_PREFIX = "http://purl.org/xapi/games/";
+	public static final String VOCAB_PREFIX = "http://rage-eu.com/xapi/";
 
 	public static final String VERB_PREFIX = VOCAB_PREFIX + "verbs/";
 
-	public static final String EXT_PREFIX = VOCAB_PREFIX + "ext/";
+	public static final String EXT_PREFIX = VOCAB_PREFIX + "extensions/";
 
 	private JsonValue actor;
 
@@ -48,15 +45,10 @@ public class XAPIFormat implements TraceFormat {
 
 	private PrettyPrintSettings prettyPrintSettings = new PrettyPrintSettings();
 
-	private DateFormat dateFormat;
-
 	private Date date;
 
 	public XAPIFormat() {
 		prettyPrintSettings.outputType = OutputType.json;
-		actor = new JsonValue(ValueType.object);
-		dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
-		dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 		date = new Date();
 	}
 
@@ -88,7 +80,7 @@ public class XAPIFormat implements TraceFormat {
 		return "application/json; charset=utf-8";
 	}
 
-	private JsonValue createStatement(String trace) {
+	public JsonValue createStatement(String trace) {
 		JsonValue statement = pool.obtain();
 		statement.setType(ValueType.object);
 
@@ -116,24 +108,35 @@ public class XAPIFormat implements TraceFormat {
 		JsonValue timeStamp = pool.obtain();
 		timeStamp.setName("timestamp");
 		date.setTime(Long.parseLong(parts[0]));
-		timeStamp.set(dateFormat.format(date));
+		timeStamp.set(toISODateString(date));
 		activity.next = timeStamp;
 
 		if (parts.length > 3) {
-			JsonValue extensions = pool.obtain();
-			extensions.setType(ValueType.object);
-			extensions.setName("extensions");
-
-			extensions.child = pool.obtain();
-			extensions.child.setType(ValueType.object);
-			extensions.child.setName(EXT_PREFIX + "value");
-			extensions.child.set(parts[3]);
 
 			JsonValue result = pool.obtain();
 			result.setType(ValueType.object);
 			result.setName("result");
-			result.child = extensions;
 			timeStamp.next = result;
+
+			if (parts[1].equals(SELECTED)){
+				JsonValue response = pool.obtain();
+				response.setType(ValueType.stringValue);
+				response.setName("response");
+				response.set(parts[3]);
+
+				result.child = response;
+			} else {
+				JsonValue extensions = pool.obtain();
+				extensions.setType(ValueType.object);
+				extensions.setName("extensions");
+
+				extensions.child = pool.obtain();
+				extensions.child.setType(ValueType.object);
+				extensions.child.setName(EXT_PREFIX + "value");
+				extensions.child.set(parts[3]);
+
+				result.child = extensions;
+			}
 		}
 
 		return statement;
@@ -143,19 +146,21 @@ public class XAPIFormat implements TraceFormat {
 		JsonValue verb = pool.obtain();
 		verb.setType(ValueType.object);
 		String id;
-		if (C.CHOICE.equals(event)) {
-			id = "choose";
-		} else if (C.SCREEN.equals(event)) {
-			id = "viewed";
-		} else if (C.ZONE.equals(event)) {
-			id = "entered";
-		} else if (C.VAR.equals(event)) {
-			id = "updated";
+		String prefix = VERB_PREFIX;
+		if (STARTED.equals(event)) {
+			prefix = "http://adlnet.gov/xapi/verbs/";
+			id = "launched";
+		} else if (SELECTED.equals(event)) {
+			prefix = "http://adlnet.gov/xapi/verbs/";
+			id = "preferred";
+		} else if (COMPLETED.equals(event)) {
+			prefix = "http://adlnet.gov/xapi/verbs/";
+			id = "terminated";
 		} else {
 			id = event;
 		}
 		verb.setName("id");
-		verb.set(VERB_PREFIX + id);
+		verb.set(prefix + id);
 		return verb;
 	}
 
@@ -164,20 +169,33 @@ public class XAPIFormat implements TraceFormat {
 		activity.setType(ValueType.object);
 		String event = parts[1];
 		String id;
-		if (C.CHOICE.equals(event)) {
-			id = "choice";
-		} else if (C.SCREEN.equals(event)) {
-			id = "screen";
-		} else if (C.ZONE.equals(event)) {
-			id = "zone";
-		} else if (C.VAR.equals(event)) {
+		if (event.matches(COMPLETED + "|" + STARTED)) {
+			id = "completable";
+		} else if (event.matches(SET + "|" + INCREASED + "|" + DECREASED)) {
 			id = "variable";
+		} else if (event.matches(SELECTED)){
+			id = "alternative";
 		} else {
 			id = event;
 		}
 		activity.setName("id");
 		activity.set(activityId + id + "/" + parts[2]);
 		return activity;
+	}
+
+	private String pad(int n) {
+		return n < 10 ? "0" + n : n + "";
+	}
+
+	private String toISODateString(Date d) {
+		int year = d.getYear();
+
+		if (year < 2000) {
+			year += 1900;
+		}
+		return year + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate())
+				+ "T" + pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":"
+				+ pad(d.getSeconds()) + "Z";
 	}
 
 	private class JsonValuePool extends Pool<JsonValue> {
