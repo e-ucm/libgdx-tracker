@@ -32,6 +32,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonWriter.OutputType;
 
 import es.eucm.gleaner.tracker.C;
@@ -113,6 +115,10 @@ public class TraceViewer extends Table implements TraceListener, C {
 
 	@Override
 	public void trace(String trace) {
+		if (!xapiFormat.isReady()) {
+			return;
+		}
+
 		String[] parts = trace.split(",");
 
 		String action = parts[1];
@@ -146,9 +152,10 @@ public class TraceViewer extends Table implements TraceListener, C {
 			style = traceStyle;
 		}
 
-		xAPI.add(
-				new Label(xapiFormat.createStatement(trace).prettyPrint(
-						OutputType.json, 0), style)).expandX().fillX();
+		JsonValue statement = new Json().fromJson(null,
+				xapiFormat.createStatement(trace));
+		xAPI.add(new Label(statement.prettyPrint(OutputType.json, 0), style))
+				.expandX().fillX();
 
 		detailed.addActor(xAPI);
 

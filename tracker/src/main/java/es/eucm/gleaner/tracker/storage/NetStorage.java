@@ -42,13 +42,16 @@ public class NetStorage implements Storage {
 
 	private NetStartListener netStartListener;
 
+	private String authorization;
+
 	/**
 	 * @param net
 	 *            an object to interact with the network
 	 * @param host
 	 *            host of the collector server
 	 * @param trackingCode
-	 *            tracking code for the game. Used by the gleaner backend to associate traces with a particular game and/or experiment
+	 *            tracking code for the game. Used by the gleaner backend to
+	 *            associate traces with a particular game and/or experiment
 	 */
 	public NetStorage(Net net, String host, String trackingCode) {
 		this.net = net;
@@ -62,21 +65,26 @@ public class NetStorage implements Storage {
 		netStartListener = new NetStartListener(tracker);
 	}
 
+	public void setAuthorization(String authorization) {
+		this.authorization = authorization;
+	}
+
 	@Override
 	public void start(HttpResponseListener startListener) {
 		net.sendHttpRequest(
-				httpBuilder
-						.newRequest()
+				httpBuilder.newRequest()
 						.url(host + REST_API_START + trackingCode)
-						.method("POST").build(), netStartListener);
+						.header("Authorization", authorization)
+						.followRedirects(true).method("POST").build(),
+				netStartListener);
 	}
 
 	@Override
 	public void send(String data, HttpResponseListener flushListener) {
 		net.sendHttpRequest(httpBuilder.newRequest().url(host + REST_API_TRACK)
-				.header("Content-Type",
-                        tracker.getTraceFormat().contentType())
+				.header("Content-Type", tracker.getTraceFormat().contentType())
 				.method("POST").header("Authorization", authToken)
+				.followRedirects(true)
 				.content(data).build(), flushListener);
 	}
 

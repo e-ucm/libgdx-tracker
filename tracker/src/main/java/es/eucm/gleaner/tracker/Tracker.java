@@ -370,6 +370,14 @@ public class Tracker implements C {
 		trace(SET, varName, value.toString());
 	}
 
+	public void increase(String varName, Number value){
+		trace(INCREASED, varName, value.toString());
+	}
+
+	public void decrease(String varName, Number value){
+		trace(DECREASED, varName, value.toString());
+	}
+
 	/**
 	 * Logs that the user clicked with the mouse a particular target (e.g. an
 	 * enemy, an ally, a button of the HUD, etc.).
