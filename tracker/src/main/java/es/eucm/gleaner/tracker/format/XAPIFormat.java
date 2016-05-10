@@ -26,7 +26,7 @@ import java.util.Date;
 
 public class XAPIFormat extends Json implements TraceFormat, C {
 
-	public static final String VOCAB_PREFIX = "http://rage-eu.com/xapi/";
+	public static final String VOCAB_PREFIX = "https://w3id.org/xapi/seriousgames/";
 
 	public static final String VERB_PREFIX = VOCAB_PREFIX + "verbs/";
 
@@ -71,8 +71,8 @@ public class XAPIFormat extends Json implements TraceFormat, C {
 		String[] parts = trace.split(",");
 
 		date.setTime(Long.parseLong(parts[0]));
-		String statement = "{\"actor\":" + actor + "," + createVerb(parts[1]) + ","
-				+ createObject(parts) + ",\"timestamp\":\""
+		String statement = "{\"actor\":" + actor + "," + createVerb(parts[1])
+				+ "," + createObject(parts) + ",\"timestamp\":\""
 				+ toISODateString(date) + "\"";
 
 		if (parts.length > 3) {
@@ -81,7 +81,8 @@ public class XAPIFormat extends Json implements TraceFormat, C {
 			if (parts[1].equals(SELECTED)) {
 				statement += "{\"response\":\"" + parts[3] + "\"}";
 			} else {
-				statement += "{\"extensions\":{\"" + EXT_PREFIX + "value\": \"" + parts[3] + "\"}}";
+				statement += "{\"extensions\":{\"" + EXT_PREFIX + "value\": \""
+						+ parts[3] + "\"}}";
 			}
 		}
 
@@ -89,38 +90,29 @@ public class XAPIFormat extends Json implements TraceFormat, C {
 	}
 
 	private String createVerb(String event) {
-		String id;
 		String prefix = VERB_PREFIX;
-		if (STARTED.equals(event)) {
-			prefix = "http://adlnet.gov/xapi/verbs/";
-			id = "launched";
-		} else if (SELECTED.equals(event)) {
-			prefix = "http://adlnet.gov/xapi/verbs/";
-			id = "preferred";
+		if (SELECTED.equals(event)) {
+			prefix = "https://w3id.org/xapi/adb/verbs/";
 		} else if (COMPLETED.equals(event)) {
-			prefix = "http://adlnet.gov/xapi/verbs/";
-			id = "terminated";
-		} else {
-			id = event;
+			prefix = "http://adlnet.gov/expapi/verbs/";
 		}
-		return "\"verb\":{\"id\":\"" + prefix + id + "\"}";
+		return "\"verb\":{\"id\":\"" + prefix + event + "\"}";
 	}
 
 	private String createObject(String[] parts) {
 		String event = parts[1];
 		String id;
 		if (event.matches(COMPLETED + "|" + STARTED)) {
-			id = "completable";
+			id = "completables";
 		} else if (event.matches(SET + "|" + INCREASED + "|" + DECREASED)) {
-			id = "variable";
+			id = "vars";
 		} else if (event.matches(SELECTED)) {
-			id = "alternative";
+			id = "alternatives";
 		} else {
 			id = event;
 		}
 
-		return "\"object\":{\"id\":\"" + objectId + id + "/" + parts[2]
-				+ "\"}";
+		return "\"object\":{\"id\":\"" + objectId + id + "/" + parts[2] + "\"}";
 	}
 
 	private String pad(int n) {
