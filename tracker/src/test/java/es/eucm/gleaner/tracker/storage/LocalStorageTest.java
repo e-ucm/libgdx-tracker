@@ -19,7 +19,7 @@ import com.badlogic.gdx.Net.HttpResponse;
 import com.badlogic.gdx.Net.HttpResponseListener;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 import com.badlogic.gdx.files.FileHandle;
-import es.eucm.gleaner.tracker.Tracker;
+import es.eucm.gleaner.tracker.CsvTracker;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -33,7 +33,7 @@ public class LocalStorageTest {
 
 	static LwjglFiles files;
 
-	private Tracker tracker;
+	private CsvTracker tracker;
 
 	private FileHandle tempFile;
 
@@ -46,7 +46,7 @@ public class LocalStorageTest {
 	public void testTraces() {
 		try {
 			File file = File.createTempFile("local-storage", "test");
-			tracker = new Tracker(new LocalStorage(
+			tracker = new CsvTracker(new LocalStorage(
 					tempFile = files.absolute(file.getAbsolutePath())));
 		} catch (IOException e) {
 			fail("Impossible to create temp file");
@@ -67,7 +67,7 @@ public class LocalStorageTest {
 	public void testLocalStorageWithDelay() {
 		try {
 			final File file = File.createTempFile("local-storage", "test");
-			tracker = new Tracker(new LocalStorage(
+			tracker = new CsvTracker(new LocalStorage(
 					tempFile = files.absolute(file.getAbsolutePath())) {
 				@Override
 				public void start(HttpResponseListener startListener) {

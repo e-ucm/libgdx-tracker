@@ -17,8 +17,6 @@ package es.eucm.gleaner.viewer;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.Touchable;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Button.ButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
@@ -35,15 +33,10 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonWriter.OutputType;
+import es.eucm.gleaner.tracker.AbstractTracker;
+import es.eucm.gleaner.tracker.AbstractTracker.TraceListener;
 
-import es.eucm.gleaner.tracker.C;
-import es.eucm.gleaner.tracker.Tracker;
-import es.eucm.gleaner.tracker.Tracker.TraceListener;
-import es.eucm.gleaner.tracker.format.XAPIFormat;
-
-public class TraceViewer extends Table implements TraceListener, C {
-
-	private XAPIFormat xapiFormat;
+public class TraceViewer extends Table implements TraceListener {
 
 	private Skin skin;
 
@@ -57,9 +50,11 @@ public class TraceViewer extends Table implements TraceListener, C {
 
 	private int count = 0;
 
-	public TraceViewer(Skin skin, Tracker tracker, XAPIFormat xapiFormat) {
+	private AbstractTracker tracker;
+
+	public TraceViewer(Skin skin, AbstractTracker tracker) {
 		this.skin = skin;
-		this.xapiFormat = xapiFormat;
+		this.tracker = tracker;
 
 		ButtonStyle style = skin.get("trace", ButtonStyle.class);
 		if (style == null) {
@@ -115,35 +110,12 @@ public class TraceViewer extends Table implements TraceListener, C {
 
 	@Override
 	public void trace(String trace) {
-		if (!xapiFormat.isReady()) {
+		if (!tracker.isReady()) {
 			return;
 		}
 
-		String[] parts = trace.split(",");
-
-		String action = parts[1];
-		String target = parts[2];
-		String value = parts.length >= 4 ? parts[3] : null;
-
-		String text = "";
-
-		text += "[#607d8b]" + action + "[] ";
-		if (value != null) {
-			String connector = "in";
-			text += "[#ff9800]" + value + "[] [#607d8b]" + connector + "[] ";
-		}
-
-		text += "[#673ab7]" + target + "[]";
-
-		Label label = new Label(text, traceStyle);
-		label.setTouchable(Touchable.disabled);
-		feed.addActor(label);
-		label.addAction(Actions.sequence(Actions.delay(2.0f),
-				Actions.fadeOut(1.0f), Actions.removeActor()));
-
 		Table xAPI = new Table();
 		xAPI.add(new Label("[#000000]" + ++count + "[]", traceStyle));
-		xAPI.add(new Label(text, traceStyle)).left().expandX();
 		xAPI.row();
 		xAPI.add();
 
@@ -152,8 +124,8 @@ public class TraceViewer extends Table implements TraceListener, C {
 			style = traceStyle;
 		}
 
-		JsonValue statement = new Json().fromJson(null,
-				xapiFormat.createStatement(trace));
+		JsonValue statement = new Json().fromJson(null, trace);
+		System.out.println(statement.prettyPrint(OutputType.json, 0));
 		xAPI.add(new Label(statement.prettyPrint(OutputType.json, 0), style))
 				.expandX().fillX();
 

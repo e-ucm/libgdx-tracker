@@ -20,7 +20,7 @@ import com.badlogic.gdx.net.ServerSocket;
 import com.badlogic.gdx.net.ServerSocketHints;
 import com.badlogic.gdx.net.Socket;
 import com.badlogic.gdx.net.SocketHints;
-import es.eucm.gleaner.tracker.Tracker;
+import es.eucm.gleaner.tracker.CsvTracker;
 import es.eucm.gleaner.tracker.http.SimpleHttpResponse;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,13 +30,13 @@ import static org.junit.Assert.assertTrue;
 
 public class NetStorageTest {
 
-	private Tracker tracker;
+	private CsvTracker tracker;
 
 	private TestNet net;
 
 	@Before
 	public void setUp() {
-		tracker = new Tracker(new NetStorage(net = new TestNet(), "", ""), 1);
+		tracker = new CsvTracker(new NetStorage(net = new TestNet(), "", ""), 1);
 	}
 
 	@Test

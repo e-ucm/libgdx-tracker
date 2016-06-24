@@ -16,11 +16,11 @@
 package es.eucm.gleaner.tracker.storage;
 
 import com.badlogic.gdx.Net.HttpResponseListener;
-import es.eucm.gleaner.tracker.Tracker;
+import es.eucm.gleaner.tracker.AbstractTracker;
 
 public interface Storage {
 
-	void setTracker(Tracker tracker);
+	void setTracker(AbstractTracker tracker);
 
 	/**
 	 * The tracker wants to start sending traces

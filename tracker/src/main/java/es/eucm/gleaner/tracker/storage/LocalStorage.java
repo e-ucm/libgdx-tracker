@@ -19,7 +19,7 @@ import com.badlogic.gdx.Net.HttpResponseListener;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.async.AsyncExecutor;
 import com.badlogic.gdx.utils.async.AsyncTask;
-import es.eucm.gleaner.tracker.Tracker;
+import es.eucm.gleaner.tracker.AbstractTracker;
 import es.eucm.gleaner.tracker.http.SimpleHttpResponse;
 
 import java.io.IOException;
@@ -44,7 +44,7 @@ public class LocalStorage implements Storage {
 	}
 
 	@Override
-	public void setTracker(Tracker tracker) {
+	public void setTracker(AbstractTracker tracker) {
 	}
 
 	@Override

@@ -15,7 +15,7 @@
  */
 package es.eucm.gleaner.tracker;
 
-import es.eucm.gleaner.tracker.format.XAPIFormat;
+import es.eucm.gleaner.tracker.XAPITracker.Completable;
 import es.eucm.gleaner.tracker.storage.TestStorage;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,23 +24,21 @@ import static org.junit.Assert.assertTrue;
 
 public class TrackerTest {
 
-	private Tracker tracker;
-
 	private TestStorage storage;
 
 	@Before
 	public void setUp() {
-		tracker = new Tracker(storage = new TestStorage());
 	}
 
 	private void generateAllTraces() {
+		CsvTracker tracker = new CsvTracker(storage = new TestStorage());
 		tracker.start();
 		tracker.screen("menu");
 		tracker.selected("options", "start");
 		tracker.zone("zone1");
 		tracker.set("score", 1000);
 		tracker.trace("random", "random", "random");
-		tracker.click(100, 200F,"object1");
+		tracker.click(100, 200F, "object1");
 		tracker.click(50, 70F);
 		tracker.requestFlush();
 		tracker.update(0);
@@ -48,10 +46,13 @@ public class TrackerTest {
 
 	@Test
 	public void testXAPIFormat() {
-		tracker.setTraceFormat(new XAPIFormat());
-		generateAllTraces();
+		XAPITracker tracker = new XAPITracker(storage = new TestStorage());
+		tracker.initialized("test", Completable.LEVEL);
+		tracker.requestFlush();
+		tracker.update(0);
 		assertTrue(storage.started);
-        System.out.println(storage.data);
-        assertTrue(storage.data.contains("actor") && storage.data.contains("verb") && storage.data.contains("object"));
+		assertTrue(storage.data.contains("actor")
+				&& storage.data.contains("verb")
+				&& storage.data.contains("object"));
 	}
 }

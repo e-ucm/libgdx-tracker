@@ -16,7 +16,7 @@
 package es.eucm.gleaner.tracker.storage;
 
 import com.badlogic.gdx.Net.HttpResponseListener;
-import es.eucm.gleaner.tracker.Tracker;
+import es.eucm.gleaner.tracker.AbstractTracker;
 import es.eucm.gleaner.tracker.http.SimpleHttpResponse;
 
 public class TestStorage implements Storage {
@@ -25,13 +25,13 @@ public class TestStorage implements Storage {
 
 	public String data = "";
 
-	public void setTracker(Tracker tracker) {
+	public void setTracker(AbstractTracker tracker) {
 	}
 
 	public void start(HttpResponseListener startListener) {
 		started = true;
 		startListener.handleHttpResponse(new SimpleHttpResponse(
-				"{\"actor\":{\"mbox\":\"user@example.com\"},\"activityId\":\"Test\"}", 200));
+				"{\"actor\":{\"mbox\":\"user@example.com\"},\"objectId\":\"Test\"}", 200));
 	}
 
 	public void send(String data, HttpResponseListener flushListener) {

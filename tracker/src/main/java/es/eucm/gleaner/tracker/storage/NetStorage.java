@@ -19,8 +19,8 @@ import com.badlogic.gdx.Net;
 import com.badlogic.gdx.Net.HttpResponseListener;
 import com.badlogic.gdx.net.HttpRequestBuilder;
 import com.badlogic.gdx.utils.ObjectMap;
-import es.eucm.gleaner.tracker.Tracker;
-import es.eucm.gleaner.tracker.Tracker.StartListener;
+import es.eucm.gleaner.tracker.AbstractTracker;
+import es.eucm.gleaner.tracker.AbstractTracker.StartListener;
 
 public class NetStorage implements Storage {
 
@@ -30,7 +30,7 @@ public class NetStorage implements Storage {
 
 	private Net net;
 
-	private Tracker tracker;
+	private AbstractTracker tracker;
 
 	private String host;
 
@@ -60,7 +60,7 @@ public class NetStorage implements Storage {
 	}
 
 	@Override
-	public void setTracker(Tracker tracker) {
+	public void setTracker(AbstractTracker tracker) {
 		this.tracker = tracker;
 		netStartListener = new NetStartListener(tracker);
 	}
@@ -82,7 +82,7 @@ public class NetStorage implements Storage {
 	@Override
 	public void send(String data, HttpResponseListener flushListener) {
 		net.sendHttpRequest(httpBuilder.newRequest().url(host + REST_API_TRACK)
-				.header("Content-Type", tracker.getTraceFormat().contentType())
+				.header("Content-Type", tracker.contentType())
 				.method("POST").header("Authorization", authToken)
 				.followRedirects(true)
 				.content(data).build(), flushListener);
@@ -94,7 +94,7 @@ public class NetStorage implements Storage {
 
 	public class NetStartListener extends StartListener {
 
-		public NetStartListener(Tracker tracker) {
+		public NetStartListener(AbstractTracker tracker) {
 			super(tracker);
 		}
 
